@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matches — E-Sports Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+    <div id="sidebar-mount"></div>
+
+    <main class="main-content fade-in">
+        <div class="page-header">
+            <div class="page-header-left">
+                <div class="page-tag">// MATCH CENTER</div>
+                <h2 class="page-title">MATC<span>HES</span></h2>
+                <p class="page-sub" id="m-count">Loading…</p>
+            </div>
+            <div style="display:flex;gap:12px">
+                <button class="btn btn-outline" onclick="openModal('result-modal')">⚔️ Enter Result</button>
+                <button class="btn btn-primary" onclick="openModal('add-match-modal')">＋ Schedule Match</button>
+            </div>
+        </div>
+
+        <div id="alert-area" class="alert"></div>
+
+        <!-- Filter -->
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+            <select id="filter-status" onchange="filterMatches()"
+                style="padding:8px 14px;font-size:13px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-primary)">
+                <option value="">All Statuses</option>
+                <option>Scheduled</option><option>Live</option><option>Completed</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">⚔️ Match Schedule</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr>
+                        <th>ID</th><th>Team 1</th><th>Team 2</th><th>Tournament</th>
+                        <th>Scheduled</th><th>Venue</th><th>Round</th>
+                        <th>Score</th><th>Winner</th><th>Status</th>
+                    </tr></thead>
+                    <tbody id="match-body">
+                        <tr><td colspan="10"><div class="loading"><div class="spinner"></div> Loading…</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Schedule Match Modal -->
+<div class="modal-overlay" id="add-match-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">SCHEDULE MATCH</span>
+            <button class="modal-close" onclick="closeModal('add-match-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>Tournament *</label>
+                    <select id="m-tournament"></select>
+                </div>
+                <div class="form-group">
+                    <label>Team 1 *</label>
+                    <select id="m-team1"></select>
+                </div>
+                <div class="form-group">
+                    <label>Team 2 *</label>
+                    <select id="m-team2"></select>
+                </div>
+                <div class="form-group">
+                    <label>Date & Time *</label>
+                    <input type="datetime-local" id="m-datetime">
+                </div>
+                <div class="form-group">
+                    <label>Venue</label>
+                    <input type="text" id="m-venue" placeholder="e.g. Online Arena" value="Online Arena">
+                </div>
+                <div class="form-group full">
+                    <label>Round</label>
+                    <select id="m-round">
+                        <option>Group Stage</option>
+                        <option>Quarter Final</option>
+                        <option>Semi Final</option>
+                        <option>Final</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-outline" onclick="closeModal('add-match-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="scheduleMatch()">Schedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enter Result Modal -->
+<div class="modal-overlay" id="result-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">ENTER MATCH RESULT</span>
+            <button class="modal-close" onclick="closeModal('result-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>Match *</label>
+                    <select id="r-match"></select>
+                </div>
+                <div class="form-group">
+                    <label>Winner Team *</label>
+                    <select id="r-winner"></select>
+                </div>
+                <div class="form-group">
+                    <label>Loser Team *</label>
+                    <select id="r-loser"></select>
+                </div>
+                <div class="form-group full">
+                    <label>Score (e.g. 13-8)</label>
+                    <input type="text" id="r-score" placeholder="13-8">
+                </div>
+            </div>
+            <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:8px">
+                ⚡ DB Trigger will auto-update Ranking after result is saved.
+            </p>
+            <div class="form-actions">
+                <button class="btn btn-outline" onclick="closeModal('result-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="enterResult()">Save Result</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('Matches');
+
+let allMatches = [];
+
+async function loadMatches() {
+    try {
+        allMatches = await apiGet('/matches');
+        document.getElementById('m-count').textContent = `${allMatches.length} total matches`;
+        renderMatches(allMatches);
+    } catch(e) {
+        document.getElementById('match-body').innerHTML = emptyRow(10, '⚠️ Server offline');
+    }
+}
+
+function renderMatches(list) {
+    if (!list.length) {
+        document.getElementById('match-body').innerHTML = emptyRow(10, 'No matches found');
+        return;
+    }
+    document.getElementById('match-body').innerHTML = list.map(m => `
+        <tr>
+            <td class="muted">#${m.match_id}</td>
+            <td><strong>${m.team1_name}</strong></td>
+            <td><strong>${m.team2_name}</strong></td>
+            <td class="muted" style="font-size:12px">${m.tournament_name}</td>
+            <td class="muted">${fmtDateTime(m.scheduled_at)}</td>
+            <td class="muted">${m.venue}</td>
+            <td><span class="badge badge-muted">${m.round}</span></td>
+            <td>${m.score ? `<span class="score-display">${m.score}</span>` : '—'}</td>
+            <td>${m.winner_name ? `<span class="badge badge-green">🏆 ${m.winner_name}</span>` : '—'}</td>
+            <td>${statusBadge(m.status)}</td>
+        </tr>`).join('');
+}
+
+function filterMatches() {
+    const s = document.getElementById('filter-status').value;
+    renderMatches(s ? allMatches.filter(m => m.status === s) : allMatches);
+}
+
+async function loadDropdowns() {
+    try {
+        const [tournaments, teams, matches] = await Promise.all([
+            apiGet('/tournaments'), apiGet('/teams'), apiGet('/matches')
+        ]);
+
+        // Schedule match dropdowns
+        const mTourn = document.getElementById('m-tournament');
+        mTourn.innerHTML = '<option value="">— Tournament —</option>';
+        tournaments.forEach(t => {
+            const o = document.createElement('option');
+            o.value = t.tournament_id; o.textContent = t.tournament_name; mTourn.appendChild(o);
+        });
+
+        [document.getElementById('m-team1'), document.getElementById('m-team2'),
+         document.getElementById('r-winner'), document.getElementById('r-loser')].forEach(sel => {
+            sel.innerHTML = '<option value="">— Team —</option>';
+            teams.forEach(t => {
+                const o = document.createElement('option');
+                o.value = t.team_id; o.textContent = t.team_name; sel.appendChild(o);
+            });
+        });
+
+        // Result: only incomplete matches
+        const rMatch = document.getElementById('r-match');
+        rMatch.innerHTML = '<option value="">— Match —</option>';
+        matches.filter(m => m.status !== 'Completed').forEach(m => {
+            const o = document.createElement('option');
+            o.value = m.match_id;
+            o.textContent = `#${m.match_id} | ${m.team1_name} vs ${m.team2_name} (${m.round})`;
+            rMatch.appendChild(o);
+        });
+    } catch(e) {}
+}
+
+async function scheduleMatch() {
+    const body = {
+        tournament_id: document.getElementById('m-tournament').value,
+        team1_id:      document.getElementById('m-team1').value,
+        team2_id:      document.getElementById('m-team2').value,
+        scheduled_at:  document.getElementById('m-datetime').value,
+        venue:         document.getElementById('m-venue').value,
+        round:         document.getElementById('m-round').value,
+    };
+    if (!body.tournament_id || !body.team1_id || !body.team2_id || !body.scheduled_at)
+        return showAlert('alert-area', 'Fill all required fields.', 'error');
+    if (body.team1_id === body.team2_id)
+        return showAlert('alert-area', 'Team 1 and Team 2 must be different.', 'error');
+    try {
+        await apiPost('/matches', body);
+        closeModal('add-match-modal');
+        showAlert('alert-area', '✅ Match scheduled!');
+        loadMatches();
+        loadDropdowns();
+    } catch(e) {
+        showAlert('alert-area', '❌ ' + e.message, 'error');
+    }
+}
+
+async function enterResult() {
+    const matchId    = document.getElementById('r-match').value;
+    const winner     = document.getElementById('r-winner').value;
+    const loser      = document.getElementById('r-loser').value;
+    const score      = document.getElementById('r-score').value.trim();
+    if (!matchId || !winner || !loser)
+        return showAlert('alert-area', 'Fill match, winner and loser.', 'error');
+    if (winner === loser)
+        return showAlert('alert-area', 'Winner and loser cannot be the same team.', 'error');
+    try {
+        await apiPost(`/matches/${matchId}/result`, {
+            winner_team_id: winner, loser_team_id: loser, score
+        });
+        closeModal('result-modal');
+        showAlert('alert-area', '✅ Result saved! Rankings updated via DB trigger.');
+        loadMatches(); loadDropdowns();
+    } catch(e) {
+        showAlert('alert-area', '❌ ' + e.message, 'error');
+    }
+}
+
+loadMatches();
+loadDropdowns();
+</script>
+</body>
+</html>

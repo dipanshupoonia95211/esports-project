@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — E-Sports Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+
+    <!-- Sidebar injected by JS -->
+    <div id="sidebar-mount"></div>
+
+    <main class="main-content fade-in">
+        <div class="page-header">
+            <div class="page-header-left">
+                <div class="page-tag">// COMMAND CENTER</div>
+                <h2 class="page-title">DASH<span>BOARD</span></h2>
+                <p class="page-sub" id="live-time"></p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card"><div class="spinner" style="margin:auto"></div></div>
+        </div>
+
+        <!-- Two columns -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;flex-wrap:wrap;">
+
+            <!-- Recent Matches -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">⚔️  Recent Matches</span>
+                    <a href="matches.html" class="btn btn-outline btn-sm">View All</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>Teams</th><th>Round</th><th>Score</th><th>Status</th>
+                        </tr></thead>
+                        <tbody id="recent-matches-body">
+                            <tr><td colspan="4"><div class="loading"><div class="spinner"></div> Loading…</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Leaderboard Snapshot -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🎖️  Leaderboard</span>
+                    <a href="leaderboard.html" class="btn btn-outline btn-sm">Full Board</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>#</th><th>Team</th><th>W</th><th>L</th><th>Pts</th>
+                        </tr></thead>
+                        <tbody id="lb-body">
+                            <tr><td colspan="5"><div class="loading"><div class="spinner"></div> Loading…</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Tournaments -->
+        <div class="card" style="margin-top:0">
+            <div class="card-header">
+                <span class="card-title">🏆  Active Tournaments</span>
+                <a href="tournaments.html" class="btn btn-outline btn-sm">Manage</a>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr>
+                        <th>Tournament</th><th>Game</th><th>Prize Pool</th>
+                        <th>Teams</th><th>Matches</th><th>Status</th>
+                    </tr></thead>
+                    <tbody id="tourn-body">
+                        <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="app.js"></script>
+<script>
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('Dashboard');
+
+// Live clock
+function updateClock() {
+    document.getElementById('live-time').textContent =
+        new Date().toLocaleString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Load stats
+async function loadStats() {
+    try {
+        const s = await apiGet('/stats');
+        document.getElementById('stats-grid').innerHTML = `
+            <div class="stat-card"><div class="stat-icon">👤</div>
+                <div class="stat-value">${s.total_players}</div>
+                <div class="stat-label">Players</div></div>
+            <div class="stat-card"><div class="stat-icon">🛡️</div>
+                <div class="stat-value">${s.total_teams}</div>
+                <div class="stat-label">Teams</div></div>
+            <div class="stat-card"><div class="stat-icon">🏆</div>
+                <div class="stat-value">${s.total_tournaments}</div>
+                <div class="stat-label">Tournaments</div></div>
+            <div class="stat-card"><div class="stat-icon">⚔️</div>
+                <div class="stat-value">${s.total_matches}</div>
+                <div class="stat-label">Matches</div></div>
+            <div class="stat-card"><div class="stat-icon">💰</div>
+                <div class="stat-value" style="font-size:20px">${fmtMoney(s.prize_pool)}</div>
+                <div class="stat-label">Total Prize Pool</div></div>
+        `;
+    } catch(e) {
+        document.getElementById('stats-grid').innerHTML =
+            `<div class="stat-card" style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-family:var(--font-mono)">⚠️ Cannot connect to server. Start Node.js backend first.</div>`;
+    }
+}
+
+async function loadRecentMatches() {
+    try {
+        const matches = await apiGet('/matches');
+        const recent = matches.slice(0, 6);
+        if (!recent.length) {
+            document.getElementById('recent-matches-body').innerHTML = emptyRow(4);
+            return;
+        }
+        document.getElementById('recent-matches-body').innerHTML = recent.map(m => `
+            <tr>
+                <td><strong>${m.team1_name}</strong> <span style="color:var(--text-muted)">vs</span> <strong>${m.team2_name}</strong></td>
+                <td class="muted">${m.round}</td>
+                <td>${m.score ? `<span class="score-display">${m.score}</span>` : '—'}</td>
+                <td>${statusBadge(m.status)}</td>
+            </tr>`).join('');
+    } catch(e) {
+        document.getElementById('recent-matches-body').innerHTML = emptyRow(4, 'Server offline');
+    }
+}
+
+async function loadLeaderboard() {
+    try {
+        const lb = await apiGet('/leaderboard');
+        const rankIcon = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+        document.getElementById('lb-body').innerHTML = lb.slice(0,6).map((r,i) => `
+            <tr>
+                <td style="font-family:var(--font-display);font-size:16px">${rankIcon(i)}</td>
+                <td><strong>${r.team_name}</strong></td>
+                <td style="color:var(--neon-green)">${r.wins}</td>
+                <td style="color:#ff5555">${r.losses}</td>
+                <td style="font-family:var(--font-display);color:var(--neon-cyan)">${r.points}</td>
+            </tr>`).join('');
+    } catch(e) {
+        document.getElementById('lb-body').innerHTML = emptyRow(5, 'Server offline');
+    }
+}
+
+async function loadTournaments() {
+    try {
+        const list = await apiGet('/tournaments');
+        document.getElementById('tourn-body').innerHTML = list.map(t => `
+            <tr>
+                <td><strong>${t.tournament_name}</strong></td>
+                <td class="muted">${t.game_name}</td>
+                <td style="color:var(--neon-cyan)">${fmtMoney(t.prize_pool)}</td>
+                <td>${t.team_count}</td>
+                <td>${t.match_count}</td>
+                <td>${statusBadge(t.status)}</td>
+            </tr>`).join('') || emptyRow(6);
+    } catch(e) {
+        document.getElementById('tourn-body').innerHTML = emptyRow(6, 'Server offline');
+    }
+}
+
+loadStats();
+loadRecentMatches();
+loadLeaderboard();
+loadTournaments();
+</script>
+</body>
+</html>
