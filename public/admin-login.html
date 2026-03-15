@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login — E-Sports Manager</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── Login-specific overrides ── */
+body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 20% 50%, rgba(0,245,255,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 50%, rgba(168,85,247,0.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+}
+
+.login-wrap {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 440px;
+    padding: 20px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.login-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px rgba(0,245,255,0.5));
+    animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(0,245,255,0.4)); }
+    50%       { transform: scale(1.06); filter: drop-shadow(0 0 30px rgba(0,245,255,0.7)); }
+}
+
+.login-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+.login-title span { color: var(--neon-cyan); }
+
+.login-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin-top: 8px;
+}
+
+.login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0,245,255,0.06);
+}
+.login-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-purple), transparent);
+}
+
+.field-row { margin-bottom: 20px; }
+.field-row label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--neon-cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.field-row input {
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 15px;
+    padding: 13px 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field-row input:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0,245,255,0.2);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--neon-cyan) 0%, #007acc 100%);
+    color: var(--bg-primary);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.login-btn:hover { box-shadow: 0 0 30px rgba(0,245,255,0.4); transform: translateY(-1px); }
+.login-btn:active { transform: translateY(0); }
+.login-btn.loading { opacity: 0.7; pointer-events: none; }
+
+.login-error {
+    background: rgba(255,50,50,0.1);
+    border: 1px solid rgba(255,50,50,0.3);
+    color: #ff5555;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    display: none;
+    letter-spacing: 0.5px;
+}
+.login-error.show { display: block; }
+
+.login-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.login-footer a {
+    color: var(--neon-cyan);
+    text-decoration: none;
+    transition: text-shadow 0.2s;
+}
+.login-footer a:hover { text-shadow: var(--glow-cyan); }
+
+.public-link {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+.public-link a { color: var(--neon-purple); text-decoration: none; }
+.public-link a:hover { text-shadow: var(--glow-purple); }
+
+/* corner decoration */
+.corner { position: absolute; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); opacity: 0.4; }
+.corner-tl { top: 12px; left: 16px; }
+.corner-br { bottom: 12px; right: 16px; }
+</style>
+</head>
+<body>
+
+<div class="login-wrap fade-in">
+
+    <div class="login-header">
+        <span class="login-icon">🎮</span>
+        <h1 class="login-title">E-SPORTS <span>MGR</span></h1>
+        <p class="login-sub">// ADMIN ACCESS PORTAL</p>
+    </div>
+
+    <div class="login-card">
+        <div class="corner corner-tl">SYS::AUTH</div>
+        <div class="corner corner-br">v2.0</div>
+
+        <div id="login-error" class="login-error"></div>
+
+        <div class="field-row">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="Enter admin username"
+                   autocomplete="username" autofocus>
+        </div>
+
+        <div class="field-row">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter password"
+                   autocomplete="current-password">
+        </div>
+
+        <button class="login-btn" id="login-btn" onclick="doLogin()">
+            ⚡ Login
+        </button>
+
+        <div class="login-footer" style="margin-top:20px">
+            Don't have an account?
+            <a href="admin-register.html">Register here →</a>
+        </div>
+
+        <div class="public-link">
+            Public page: <a href="position.html">🔍 Check Team Position</a>
+        </div>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+// If already logged in, skip login
+if (getAdminSession()) window.location.href = 'index.html';
+
+// Allow Enter key to submit
+['username','password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') doLogin();
+    });
+});
+
+async function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errEl    = document.getElementById('login-error');
+    const btn      = document.getElementById('login-btn');
+
+    errEl.classList.remove('show');
+
+    if (!username || !password) {
+        errEl.textContent = '⚠ Username and password are required.';
+        errEl.classList.add('show');
+        return;
+    }
+
+    btn.classList.add('loading');
+    btn.textContent = 'Verifying…';
+
+    try {
+        const res = await fetch('http://localhost:3000/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            errEl.textContent = '❌ ' + data.error;
+            errEl.classList.add('show');
+            btn.classList.remove('loading');
+            btn.textContent = '⚡ Login';
+            return;
+        }
+
+        // Save admin info in localStorage for UI use
+        setAdminSession({ admin_id: data.admin_id, name: data.name, username: data.username, role: data.role });
+
+        btn.textContent = '✅ Redirecting…';
+        setTimeout(() => { window.location.href = 'index.html'; }, 600);
+
+    } catch(e) {
+        errEl.textContent = '⚠ Cannot connect to server. Start Node.js backend first.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        btn.textContent = '⚡ Login';
+    }
+}
+</script>
+</body>
+</html>

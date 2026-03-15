@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard — E-Sports Manager</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+    margin: 32px 0;
+}
+.podium-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.podium-name {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-align: center;
+    color: var(--text-primary);
+}
+.podium-pts {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.podium-block {
+    width: 120px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 16px 8px 12px;
+    font-family: var(--font-display);
+}
+.podium-block.p1 {
+    height: 150px;
+    background: linear-gradient(180deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05));
+    border: 1px solid rgba(255,215,0,0.4);
+    font-size: 42px;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255,215,0,0.6);
+}
+.podium-block.p2 {
+    height: 110px;
+    background: linear-gradient(180deg, rgba(192,192,192,0.15), transparent);
+    border: 1px solid rgba(192,192,192,0.3);
+    font-size: 32px;
+    color: #c0c0c0;
+}
+.podium-block.p3 {
+    height: 80px;
+    background: linear-gradient(180deg, rgba(205,127,50,0.15), transparent);
+    border: 1px solid rgba(205,127,50,0.3);
+    font-size: 26px;
+    color: #cd7f32;
+}
+</style>
+</head>
+<body>
+<div class="layout">
+    <div id="sidebar-mount"></div>
+
+    <main class="main-content fade-in">
+        <div class="page-header">
+            <div class="page-header-left">
+                <div class="page-tag">// RANKINGS</div>
+                <h2 class="page-title">LEADER<span>BOARD</span></h2>
+                <p class="page-sub">Live rankings — updated by DB trigger on every match result</p>
+            </div>
+        </div>
+
+        <!-- Podium -->
+        <div class="card">
+            <div class="card-header"><span class="card-title">🏅 Top 3 Podium</span></div>
+            <div id="podium-area">
+                <div class="loading"><div class="spinner"></div> Loading podium…</div>
+            </div>
+        </div>
+
+        <!-- Full Leaderboard Table -->
+        <div class="card">
+            <div class="card-header"><span class="card-title">📊 Full Rankings</span></div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr>
+                        <th>Rank</th><th>Team</th><th>Tournament</th>
+                        <th>Wins</th><th>Losses</th><th>Points</th>
+                    </tr></thead>
+                    <tbody id="lb-body">
+                        <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Rewards -->
+        <div class="card">
+            <div class="card-header"><span class="card-title">🏆 Rewards & Prizes</span></div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr>
+                        <th>Team</th><th>Tournament</th><th>Award</th><th>Prize Amount</th><th>Awarded On</th>
+                    </tr></thead>
+                    <tbody id="rewards-body">
+                        <tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="app.js"></script>
+<script>
+requireAuth();
+document.getElementById('sidebar-mount').innerHTML = renderSidebar('Leaderboard');
+
+async function loadLeaderboard() {
+    try {
+        const lb = await apiGet('/leaderboard');
+
+        // Podium
+        const top3 = lb.slice(0, 3);
+        const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean); // 2nd, 1st, 3rd display order
+        const classes = top3[1] ? ['p2','p1','p3'] : ['p1'];
+        const emojis  = top3[1] ? ['🥈','🥇','🥉'] : ['🥇'];
+
+        document.getElementById('podium-area').innerHTML = `
+            <div class="podium">
+                ${podiumOrder.map((t, i) => `
+                    <div class="podium-slot">
+                        <div class="podium-name">${t.team_name}</div>
+                        <div class="podium-pts">${t.points} PTS · ${t.wins}W ${t.losses}L</div>
+                        <div class="podium-block ${classes[i]}">${emojis[i]}</div>
+                    </div>`).join('')}
+            </div>`;
+
+        // Table
+        const rankLabel = (i) => {
+            if (i === 0) return `<span style="font-size:20px">🥇</span>`;
+            if (i === 1) return `<span style="font-size:20px">🥈</span>`;
+            if (i === 2) return `<span style="font-size:20px">🥉</span>`;
+            return `<span style="font-family:var(--font-display);color:var(--text-muted)">#${i+1}</span>`;
+        };
+        document.getElementById('lb-body').innerHTML = lb.map((r, i) => `
+            <tr>
+                <td>${rankLabel(i)}</td>
+                <td><strong style="${i<3?'color:var(--text-primary)':''}">${r.team_name}</strong></td>
+                <td class="muted">${r.tournament_name}</td>
+                <td><span style="color:var(--neon-green);font-family:var(--font-display)">${r.wins}</span></td>
+                <td><span style="color:#ff5555;font-family:var(--font-display)">${r.losses}</span></td>
+                <td><span style="font-family:var(--font-display);font-size:18px;color:var(--neon-cyan);text-shadow:var(--glow-cyan)">${r.points}</span></td>
+            </tr>`).join('') || emptyRow(6);
+    } catch(e) {
+        document.getElementById('lb-body').innerHTML = emptyRow(6, '⚠️ Server offline');
+        document.getElementById('podium-area').innerHTML =
+            `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Start Node.js server first</p></div>`;
+    }
+}
+
+async function loadRewards() {
+    try {
+        const rewards = await apiGet('/rewards');
+        document.getElementById('rewards-body').innerHTML = rewards.map(r => `
+            <tr>
+                <td><strong>${r.team_name}</strong></td>
+                <td class="muted">${r.tournament_name}</td>
+                <td>${statusBadge(r.reward_type)}</td>
+                <td style="color:var(--neon-cyan)">${fmtMoney(r.prize_amount)}</td>
+                <td class="muted">${fmtDate(r.awarded_on)}</td>
+            </tr>`).join('') || emptyRow(5);
+    } catch(e) {
+        document.getElementById('rewards-body').innerHTML = emptyRow(5, '⚠️ Server offline');
+    }
+}
+
+loadLeaderboard();
+loadRewards();
+</script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Register — E-Sports Manager</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 80% 50%, rgba(0,255,136,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 20% 50%, rgba(168,85,247,0.05) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+}
+
+.reg-wrap {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 520px;
+    padding: 20px;
+}
+
+.reg-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.reg-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 0 16px rgba(0,255,136,0.5));
+}
+
+.reg-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+.reg-title span { color: var(--neon-green); }
+.reg-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin-top: 6px;
+}
+
+.reg-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0,255,136,0.05);
+}
+.reg-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-green), var(--neon-cyan), transparent);
+}
+
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-full  { grid-column: 1 / -1; }
+
+.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 4px; }
+.field label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--neon-green);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.field input {
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input:focus {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 10px rgba(0,255,136,0.15);
+}
+.field input.error { border-color: #ff5555; }
+.field input.ok    { border-color: var(--neon-green); }
+
+/* Password strength bar */
+.strength-wrap { margin-top: 6px; }
+.strength-bar-bg {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.strength-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s, background 0.3s;
+    width: 0%;
+}
+.strength-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+
+.reg-alert {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    display: none;
+    letter-spacing: 0.5px;
+}
+.reg-alert.show   { display: block; }
+.reg-alert.error  { background: rgba(255,50,50,0.1); border: 1px solid rgba(255,50,50,0.3); color: #ff5555; }
+.reg-alert.success{ background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--neon-green); }
+
+.reg-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--neon-green) 0%, #009955 100%);
+    color: var(--bg-primary);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+}
+.reg-btn:hover { box-shadow: 0 0 25px rgba(0,255,136,0.35); transform: translateY(-1px); }
+.reg-btn.loading { opacity: 0.7; pointer-events: none; }
+
+.reg-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.reg-footer a { color: var(--neon-cyan); text-decoration: none; }
+.reg-footer a:hover { text-shadow: var(--glow-cyan); }
+
+.role-info {
+    background: rgba(168,85,247,0.08);
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--neon-purple);
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="reg-wrap fade-in">
+    <div class="reg-header">
+        <span class="reg-icon">🧑‍💼</span>
+        <h1 class="reg-title">ADMIN <span>REGISTER</span></h1>
+        <p class="reg-sub">// CREATE ORGANIZER ACCOUNT</p>
+    </div>
+
+    <div class="reg-card">
+
+        <div class="role-info">
+            🛡️ New accounts are created as <strong>Organizer</strong> role.
+            SuperAdmin can be set directly in the database.
+        </div>
+
+        <div id="reg-alert" class="reg-alert"></div>
+
+        <div class="form-2col">
+            <!-- Full Name -->
+            <div class="field">
+                <label>Full Name *</label>
+                <input type="text" id="reg-name" placeholder="e.g. Rahul Sharma">
+            </div>
+            <!-- Username -->
+            <div class="field">
+                <label>Username *</label>
+                <input type="text" id="reg-username" placeholder="e.g. rahulAdmin"
+                       oninput="validateUsername(this)">
+            </div>
+            <!-- Email -->
+            <div class="field form-full">
+                <label>Email Address *</label>
+                <input type="email" id="reg-email" placeholder="admin@esports.com">
+            </div>
+            <!-- Password -->
+            <div class="field">
+                <label>Password *</label>
+                <input type="password" id="reg-password" placeholder="Min. 6 characters"
+                       oninput="checkStrength(this.value)">
+                <div class="strength-wrap">
+                    <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
+                    <div class="strength-label" id="strength-label" style="color:var(--text-muted)">—</div>
+                </div>
+            </div>
+            <!-- Confirm Password -->
+            <div class="field">
+                <label>Confirm Password *</label>
+                <input type="password" id="reg-confirm" placeholder="Re-enter password"
+                       oninput="validateConfirm(this)">
+            </div>
+        </div>
+
+        <button class="reg-btn" id="reg-btn" onclick="doRegister()">
+            ✅ Create Admin Account
+        </button>
+
+        <div class="reg-footer">
+            Already have an account?
+            <a href="admin-login.html">← Login here</a>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// If already logged in, redirect
+if (getAdminSession()) window.location.href = 'index.html';
+
+// Password strength checker
+function checkStrength(pwd) {
+    const bar   = document.getElementById('strength-bar');
+    const label = document.getElementById('strength-label');
+    let score = 0;
+    if (pwd.length >= 6)  score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    const levels = [
+        { pct:'20%', color:'#ff5555', text:'WEAK'      },
+        { pct:'40%', color:'#ff8c00', text:'FAIR'      },
+        { pct:'60%', color:'#ffd700', text:'MODERATE'  },
+        { pct:'80%', color:'#00f5ff', text:'STRONG'    },
+        { pct:'100%', color:'#00ff88', text:'VERY STRONG' },
+    ];
+    const lvl = levels[Math.max(0, score - 1)] || levels[0];
+    bar.style.width      = pwd.length ? lvl.pct : '0%';
+    bar.style.background = pwd.length ? lvl.color : 'transparent';
+    label.textContent    = pwd.length ? lvl.text : '—';
+    label.style.color    = pwd.length ? lvl.color : 'var(--text-muted)';
+}
+
+function validateUsername(inp) {
+    const ok = /^[a-zA-Z0-9_]{3,}$/.test(inp.value);
+    inp.className = inp.value ? (ok ? 'ok' : 'error') : '';
+}
+
+function validateConfirm(inp) {
+    const pwd = document.getElementById('reg-password').value;
+    inp.className = inp.value ? (inp.value === pwd ? 'ok' : 'error') : '';
+}
+
+async function doRegister() {
+    const name     = document.getElementById('reg-name').value.trim();
+    const username = document.getElementById('reg-username').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const confirm  = document.getElementById('reg-confirm').value;
+    const alertEl  = document.getElementById('reg-alert');
+    const btn      = document.getElementById('reg-btn');
+
+    alertEl.classList.remove('show','error','success');
+
+    // Validate
+    if (!name || !username || !email || !password || !confirm) {
+        alertEl.textContent = '⚠ All fields are required.';
+        alertEl.className = 'reg-alert error show'; return;
+    }
+    if (!/^[a-zA-Z0-9_]{3,}$/.test(username)) {
+        alertEl.textContent = '⚠ Username must be 3+ characters, letters/numbers/underscore only.';
+        alertEl.className = 'reg-alert error show'; return;
+    }
+    if (password.length < 6) {
+        alertEl.textContent = '⚠ Password must be at least 6 characters.';
+        alertEl.className = 'reg-alert error show'; return;
+    }
+    if (password !== confirm) {
+        alertEl.textContent = '⚠ Passwords do not match.';
+        alertEl.className = 'reg-alert error show'; return;
+    }
+
+    btn.classList.add('loading');
+    btn.textContent = 'Creating account…';
+
+    try {
+        const res = await fetch('http://localhost:3000/admin/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ name, username, email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            alertEl.textContent = '❌ ' + data.error;
+            alertEl.className = 'reg-alert error show';
+            btn.classList.remove('loading');
+            btn.textContent = '✅ Create Admin Account';
+            return;
+        }
+
+        alertEl.textContent = `✅ Account created! Admin ID: #${data.admin_id}. Redirecting to login…`;
+        alertEl.className = 'reg-alert success show';
+        btn.textContent = '✅ Done!';
+
+        setTimeout(() => { window.location.href = 'admin-login.html'; }, 2000);
+
+    } catch(e) {
+        alertEl.textContent = '⚠ Cannot connect to server. Start Node.js backend first.';
+        alertEl.className = 'reg-alert error show';
+        btn.classList.remove('loading');
+        btn.textContent = '✅ Create Admin Account';
+    }
+}
+</script>
+</body>
+</html>
