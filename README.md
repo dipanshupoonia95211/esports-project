@@ -1,11 +1,6 @@
-# 🎮 E-Sports Management System
-**Full Stack: MySQL + Node.js + Express + HTML/CSS/JS**
 
----
 
-## 📁 Project Structure
 
-```
 esports/
 ├── schema.sql          ← Complete database (run this first)
 ├── server.js           ← Express backend (Node.js)
@@ -129,3 +124,7 @@ That's it! All HTML pages are served from `public/`.
 ---
 
 *Built with MySQL · Node.js · Express · HTML/CSS/JS*
+=======
+# esports-project
+E-Sports Management System is a full-stack web application to manage players, teams, tournaments, matches, rankings, rewards, and sponsors. Built using MySQL, Node.js, Express, and HTML/CSS/JS, it demonstrates DBMS concepts like normalization, triggers, views, and transactions.
+>>>>>>> 944eca6017514b0d72257af44c11a2dc82d8370c
