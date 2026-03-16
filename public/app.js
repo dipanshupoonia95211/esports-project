@@ -2,7 +2,11 @@
 //  E-SPORTS MANAGEMENT — SHARED JAVASCRIPT v2.0
 // ============================================================
 
-const API = 'http://esports-project-production.up.railway.app/api';
+const BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : 'https://esports-project-production.up.railway.app';
+
+const API = BASE + '/api';
 
 // ── AUTH HELPERS ───────────────────────────────────────────
 function requireAuth() {
@@ -20,7 +24,7 @@ function clearAdminSession() {
     localStorage.removeItem('esports_admin');
 }
 async function logout() {
-    try { await fetch('http://esports-project-production.up.railway.app/admin/logout', { method: 'POST', credentials: 'include' }); } catch(e) {}
+    try { await fetch(`${BASE}/admin/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
     clearAdminSession();
     window.location.href = 'admin-login.html';
 }

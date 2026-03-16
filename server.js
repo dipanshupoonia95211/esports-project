@@ -40,7 +40,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'dipanshupoonia95211@gmail.com',
-        pass: 'ziabolguyyllgacfr'   // App password (spaces removed)
+        pass: 'yiofoudedpqlfote'   // App password (spaces removed)
     }
 });
 
@@ -494,7 +494,7 @@ app.get('/api/payments', requireAdmin, async (req, res) => {
 
 
 // ── START ────────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`\n🎮  E-Sports Server v3.0 → http://localhost:${PORT}`);
     console.log(`🔐  Admin Login         → http://localhost:${PORT}/admin-login.html`);
     console.log(`📧  Email Verification  → ENABLED via Nodemailer`);
