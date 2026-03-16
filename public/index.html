@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — E-Sports Manager</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00f5ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ESports MGR">
+<link rel="apple-touch-icon" href="/icon-192.png">
 </head>
 <body>
 <div class="layout">
@@ -188,5 +194,99 @@ loadRecentMatches();
 loadLeaderboard();
 loadTournaments();
 </script>
+
+<!-- ── PWA Install Banner ── -->
+<div id="pwa-banner" style="
+    display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--bg-secondary); border:1px solid var(--border-bright);
+    border-radius:16px; padding:16px 24px; z-index:9999;
+    box-shadow:0 0 40px rgba(0,245,255,0.2);
+    display:none; align-items:center; gap:16px;
+    font-family:var(--font-body); max-width:420px; width:90%;
+    animation: slideUp 0.4s ease;">
+    <span style="font-size:36px">🎮</span>
+    <div style="flex:1">
+        <div style="font-family:var(--font-display);font-size:13px;letter-spacing:1px;color:var(--neon-cyan)">
+            INSTALL E-SPORTS MANAGER
+        </div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:3px">
+            Add to home screen for quick access
+        </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+        <button id="pwa-install-btn" style="
+            background:linear-gradient(135deg,var(--neon-cyan),#007acc);
+            border:none; border-radius:8px; color:var(--bg-primary);
+            font-family:var(--font-display); font-size:11px; font-weight:700;
+            letter-spacing:1px; padding:8px 16px; cursor:pointer;
+            white-space:nowrap;">
+            ✅ INSTALL
+        </button>
+        <button onclick="dismissPWA()" style="
+            background:transparent; border:1px solid var(--border);
+            border-radius:8px; color:var(--text-muted);
+            font-family:var(--font-mono); font-size:10px;
+            padding:5px 10px; cursor:pointer;">
+            Not now
+        </button>
+    </div>
+</div>
+
+<style>
+@keyframes slideUp {
+    from { opacity:0; transform:translateX(-50%) translateY(20px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+</style>
+
+<script>
+// ── Service Worker Registration ──
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('✅ SW registered:', reg.scope))
+            .catch(err => console.log('❌ SW error:', err));
+    });
+}
+
+// ── PWA Install Prompt ──
+let deferredPrompt = null;
+const banner       = document.getElementById('pwa-banner');
+const installBtn   = document.getElementById('pwa-install-btn');
+
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show banner after 3 seconds
+    setTimeout(() => {
+        if (!localStorage.getItem('pwa_dismissed')) {
+            banner.style.display = 'flex';
+        }
+    }, 3000);
+});
+
+installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+        banner.style.display = 'none';
+        console.log('✅ PWA installed!');
+    }
+    deferredPrompt = null;
+});
+
+function dismissPWA() {
+    banner.style.display = 'none';
+    localStorage.setItem('pwa_dismissed', 'true');
+}
+
+// Detect if already installed
+window.addEventListener('appinstalled', () => {
+    banner.style.display = 'none';
+    console.log('✅ App installed successfully!');
+});
+</script>
+
 </body>
 </html>

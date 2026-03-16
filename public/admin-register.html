@@ -273,7 +273,7 @@ async function doRegister() {
     btn.textContent = 'Sending OTP…';
 
     try {
-        const res  = await fetch('http://localhost:3000/admin/register', {
+        const res  = await fetch('http://10.118.181.106:3000/admin/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -311,7 +311,7 @@ async function verifyOTP() {
     btn.textContent = 'Verifying…';
 
     try {
-        const res  = await fetch('http://localhost:3000/admin/verify-otp', {
+        const res  = await fetch('http://10.118.181.106:3000/admin/verify-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -337,7 +337,7 @@ async function verifyOTP() {
 // Resend OTP
 async function resendOTP() {
     try {
-        const res = await fetch('http://localhost:3000/admin/resend-otp', {
+        const res = await fetch('http://10.118.181.106:3000/admin/resend-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: registeredEmail })

@@ -242,7 +242,7 @@ async function doLogin() {
     btn.textContent = 'Verifying…';
 
     try {
-        const res = await fetch('http://localhost:3000/admin/login', {
+        const res = await fetch('http://10.118.181.106:3000/admin/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

@@ -2,7 +2,7 @@
 //  E-SPORTS MANAGEMENT — SHARED JAVASCRIPT v2.0
 // ============================================================
 
-const API = 'http://localhost:3000/api';
+const API = 'http://10.118.181.106:3000/api';
 
 // ── AUTH HELPERS ───────────────────────────────────────────
 function requireAuth() {
@@ -20,7 +20,7 @@ function clearAdminSession() {
     localStorage.removeItem('esports_admin');
 }
 async function logout() {
-    try { await fetch('http://localhost:3000/admin/logout', { method: 'POST', credentials: 'include' }); } catch(e) {}
+    try { await fetch('http://10.118.181.106:3000/admin/logout', { method: 'POST', credentials: 'include' }); } catch(e) {}
     clearAdminSession();
     window.location.href = 'admin-login.html';
 }

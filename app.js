@@ -2,7 +2,7 @@
 //  E-SPORTS MANAGEMENT — SHARED JAVASCRIPT
 // ============================================================
 
-const API = 'http://localhost:3000/api';
+const API = 'http://10.118.181.106:3000/api';
 
 // ── Sidebar Injection ──────────────────────────────────────
 function renderSidebar(activePage) {

@@ -494,7 +494,7 @@ app.get('/api/payments', requireAdmin, async (req, res) => {
 
 
 // ── START ────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🎮  E-Sports Server v3.0 → http://localhost:${PORT}`);
     console.log(`🔐  Admin Login         → http://localhost:${PORT}/admin-login.html`);
     console.log(`📧  Email Verification  → ENABLED via Nodemailer`);

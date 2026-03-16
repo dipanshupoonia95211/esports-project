@@ -43,13 +43,13 @@ npm install
 ### Step 4 — Start the backend server
 ```bash
 npm start
-# Server runs at http://localhost:3000
+# Server runs at http://10.118.181.106:3000
 ```
 
 ### Step 5 — Open the frontend
 Open your browser and go to:
 ```
-http://localhost:3000
+http://10.118.181.106:3000
 ```
 That's it! All HTML pages are served from `public/`.
 
