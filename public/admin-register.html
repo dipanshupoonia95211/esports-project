@@ -6,310 +6,274 @@
 <title>Admin Register — E-Sports Manager</title>
 <link rel="stylesheet" href="style.css">
 <style>
-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
 body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background:
-        radial-gradient(ellipse 80% 60% at 80% 50%, rgba(0,255,136,0.05) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 20% 50%, rgba(168,85,247,0.05) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
+    content:''; position:fixed; inset:0;
+    background: radial-gradient(ellipse 80% 60% at 80% 50%, rgba(0,255,136,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 20% 50%, rgba(168,85,247,0.05) 0%, transparent 60%);
+    pointer-events:none; z-index:0;
+}
+.wrap { position:relative; z-index:1; width:100%; max-width:520px; padding:20px; }
+.header { text-align:center; margin-bottom:28px; }
+.header-icon { font-size:48px; display:block; margin-bottom:12px; filter:drop-shadow(0 0 16px rgba(0,255,136,0.5)); }
+.header-title { font-family:var(--font-display); font-size:22px; font-weight:900; letter-spacing:4px; color:var(--text-primary); text-transform:uppercase; }
+.header-title span { color:var(--neon-green); }
+.header-sub { font-family:var(--font-mono); font-size:11px; color:var(--text-muted); letter-spacing:2px; margin-top:6px; }
+
+.card {
+    background:var(--bg-card); border:1px solid var(--border);
+    border-radius:12px; padding:32px; position:relative; overflow:hidden;
+}
+.card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--neon-green), var(--neon-cyan), transparent);
 }
 
-.reg-wrap {
-    position: relative; z-index: 1;
-    width: 100%; max-width: 520px;
-    padding: 20px;
-}
+.step { display:none; }
+.step.active { display:block; }
 
-.reg-header {
-    text-align: center;
-    margin-bottom: 32px;
+.step-indicator {
+    display:flex; gap:8px; justify-content:center; margin-bottom:24px;
 }
+.step-dot {
+    width:32px; height:6px; border-radius:3px;
+    background:var(--border); transition:background 0.3s;
+}
+.step-dot.active { background:var(--neon-green); }
+.step-dot.done   { background:var(--neon-cyan); }
 
-.reg-icon {
-    font-size: 48px;
-    display: block;
-    margin-bottom: 14px;
-    filter: drop-shadow(0 0 16px rgba(0,255,136,0.5));
-}
-
-.reg-title {
-    font-family: var(--font-display);
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: 4px;
-    color: var(--text-primary);
-    text-transform: uppercase;
-}
-.reg-title span { color: var(--neon-green); }
-.reg-sub {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 2px;
-    margin-top: 6px;
-}
-
-.reg-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 36px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 0 60px rgba(0,255,136,0.05);
-}
-.reg-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--neon-green), var(--neon-cyan), transparent);
-}
-
-.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-full  { grid-column: 1 / -1; }
-
-.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 4px; }
-.field label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--neon-green);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
+.field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.field label { font-family:var(--font-mono); font-size:11px; color:var(--neon-green); letter-spacing:2px; text-transform:uppercase; }
 .field input {
-    width: 100%;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text-primary);
-    font-family: var(--font-body);
-    font-size: 14px;
-    padding: 11px 14px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    background:rgba(0,0,0,0.5); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--text-primary);
+    font-family:var(--font-body); font-size:14px; padding:11px 14px;
+    outline:none; transition:border-color 0.2s, box-shadow 0.2s; width:100%;
 }
-.field input:focus {
-    border-color: var(--neon-green);
-    box-shadow: 0 0 10px rgba(0,255,136,0.15);
-}
-.field input.error { border-color: #ff5555; }
-.field input.ok    { border-color: var(--neon-green); }
+.field input:focus { border-color:var(--neon-green); box-shadow:0 0 10px rgba(0,255,136,0.15); }
 
-/* Password strength bar */
-.strength-wrap { margin-top: 6px; }
-.strength-bar-bg {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+.strength-wrap { margin-top:5px; }
+.strength-bg { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.strength-bar { height:100%; border-radius:2px; transition:width 0.3s, background 0.3s; width:0%; }
+.strength-lbl { font-family:var(--font-mono); font-size:10px; margin-top:3px; letter-spacing:1px; color:var(--text-muted); }
+
+.alert { font-family:var(--font-mono); font-size:12px; padding:10px 14px; border-radius:var(--radius); margin-bottom:14px; display:none; letter-spacing:0.5px; }
+.alert.show   { display:block; }
+.alert.error  { background:rgba(255,50,50,0.1); border:1px solid rgba(255,50,50,0.3); color:#ff5555; }
+.alert.success{ background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.3); color:var(--neon-green); }
+.alert.info   { background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.3); color:var(--neon-cyan); }
+
+.submit-btn {
+    width:100%; padding:13px; border:none; border-radius:var(--radius);
+    font-family:var(--font-display); font-size:13px; font-weight:700;
+    letter-spacing:3px; text-transform:uppercase; cursor:pointer; margin-top:16px;
+    transition:all 0.2s;
 }
-.strength-bar {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.3s, background 0.3s;
-    width: 0%;
+.btn-green { background:linear-gradient(135deg, var(--neon-green), #009955); color:var(--bg-primary); }
+.btn-green:hover { box-shadow:0 0 25px rgba(0,255,136,0.35); transform:translateY(-1px); }
+.btn-cyan  { background:linear-gradient(135deg, var(--neon-cyan), #007acc); color:var(--bg-primary); }
+.btn-cyan:hover { box-shadow:0 0 25px rgba(0,245,255,0.35); transform:translateY(-1px); }
+.btn-disabled { opacity:0.6; pointer-events:none; }
+
+/* OTP boxes */
+.otp-row { display:flex; gap:10px; justify-content:center; margin:16px 0; }
+.otp-box {
+    width:52px; height:60px; text-align:center;
+    font-family:var(--font-display); font-size:24px; font-weight:700;
+    background:rgba(0,0,0,0.5); border:2px solid var(--border);
+    border-radius:10px; color:var(--neon-cyan); outline:none;
+    transition:border-color 0.2s, box-shadow 0.2s;
 }
-.strength-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    margin-top: 4px;
-    letter-spacing: 1px;
+.otp-box:focus { border-color:var(--neon-cyan); box-shadow:0 0 12px rgba(0,245,255,0.25); }
+
+.email-display {
+    background:rgba(0,245,255,0.06); border:1px solid rgba(0,245,255,0.2);
+    border-radius:8px; padding:12px 16px; text-align:center;
+    font-family:var(--font-mono); font-size:13px; color:var(--neon-cyan);
+    margin-bottom:16px;
 }
 
-.reg-alert {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 10px 14px;
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-    display: none;
-    letter-spacing: 0.5px;
-}
-.reg-alert.show   { display: block; }
-.reg-alert.error  { background: rgba(255,50,50,0.1); border: 1px solid rgba(255,50,50,0.3); color: #ff5555; }
-.reg-alert.success{ background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--neon-green); }
+.resend-row { text-align:center; margin-top:12px; font-family:var(--font-mono); font-size:12px; color:var(--text-muted); }
+.resend-btn { color:var(--neon-cyan); cursor:pointer; background:none; border:none; font-family:var(--font-mono); font-size:12px; padding:0; }
+.resend-btn:hover { text-shadow:var(--glow-cyan); }
 
-.reg-btn {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: var(--radius);
-    background: linear-gradient(135deg, var(--neon-green) 0%, #009955 100%);
-    color: var(--bg-primary);
-    font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: all 0.2s;
-}
-.reg-btn:hover { box-shadow: 0 0 25px rgba(0,255,136,0.35); transform: translateY(-1px); }
-.reg-btn.loading { opacity: 0.7; pointer-events: none; }
-
-.reg-footer {
-    text-align: center;
-    margin-top: 20px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--text-muted);
-}
-.reg-footer a { color: var(--neon-cyan); text-decoration: none; }
-.reg-footer a:hover { text-shadow: var(--glow-cyan); }
-
-.role-info {
-    background: rgba(168,85,247,0.08);
-    border: 1px solid rgba(168,85,247,0.2);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--neon-purple);
-    letter-spacing: 0.5px;
-    margin-bottom: 20px;
-}
+.footer-link { text-align:center; margin-top:18px; font-family:var(--font-mono); font-size:12px; color:var(--text-muted); }
+.footer-link a { color:var(--neon-cyan); text-decoration:none; }
 </style>
 </head>
 <body>
-
-<div class="reg-wrap fade-in">
-    <div class="reg-header">
-        <span class="reg-icon">🧑‍💼</span>
-        <h1 class="reg-title">ADMIN <span>REGISTER</span></h1>
-        <p class="reg-sub">// CREATE ORGANIZER ACCOUNT</p>
+<div class="wrap fade-in">
+    <div class="header">
+        <span class="header-icon">🧑‍💼</span>
+        <h1 class="header-title">ADMIN <span>REGISTER</span></h1>
+        <p class="header-sub">// CREATE ORGANIZER ACCOUNT</p>
     </div>
 
-    <div class="reg-card">
-
-        <div class="role-info">
-            🛡️ New accounts are created as <strong>Organizer</strong> role.
-            SuperAdmin can be set directly in the database.
+    <div class="card">
+        <!-- Step indicators -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot-1"></div>
+            <div class="step-dot" id="dot-2"></div>
+            <div class="step-dot" id="dot-3"></div>
         </div>
 
-        <div id="reg-alert" class="reg-alert"></div>
+        <div id="alert-box" class="alert"></div>
 
-        <div class="form-2col">
-            <!-- Full Name -->
-            <div class="field">
-                <label>Full Name *</label>
-                <input type="text" id="reg-name" placeholder="e.g. Rahul Sharma">
+        <!-- STEP 1: Registration Form -->
+        <div class="step active" id="step-1">
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:16px">
+                STEP 1 OF 2 — FILL YOUR DETAILS
             </div>
-            <!-- Username -->
-            <div class="field">
-                <label>Username *</label>
-                <input type="text" id="reg-username" placeholder="e.g. rahulAdmin"
-                       oninput="validateUsername(this)">
-            </div>
-            <!-- Email -->
-            <div class="field form-full">
-                <label>Email Address *</label>
-                <input type="email" id="reg-email" placeholder="admin@esports.com">
-            </div>
-            <!-- Password -->
-            <div class="field">
-                <label>Password *</label>
-                <input type="password" id="reg-password" placeholder="Min. 6 characters"
-                       oninput="checkStrength(this.value)">
-                <div class="strength-wrap">
-                    <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
-                    <div class="strength-label" id="strength-label" style="color:var(--text-muted)">—</div>
+            <div class="two-col">
+                <div class="field">
+                    <label>Full Name *</label>
+                    <input type="text" id="reg-name" placeholder="Your name">
+                </div>
+                <div class="field">
+                    <label>Username *</label>
+                    <input type="text" id="reg-username" placeholder="username">
                 </div>
             </div>
-            <!-- Confirm Password -->
             <div class="field">
-                <label>Confirm Password *</label>
-                <input type="password" id="reg-confirm" placeholder="Re-enter password"
-                       oninput="validateConfirm(this)">
+                <label>Email Address *</label>
+                <input type="email" id="reg-email" placeholder="your@email.com">
+            </div>
+            <div class="two-col">
+                <div class="field">
+                    <label>Password *</label>
+                    <input type="password" id="reg-password" placeholder="Min 6 chars" oninput="checkStrength(this.value)">
+                    <div class="strength-wrap">
+                        <div class="strength-bg"><div class="strength-bar" id="s-bar"></div></div>
+                        <div class="strength-lbl" id="s-lbl">—</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Confirm Password *</label>
+                    <input type="password" id="reg-confirm" placeholder="Re-enter">
+                </div>
+            </div>
+            <button class="submit-btn btn-green" id="reg-btn" onclick="doRegister()">
+                📧 Send OTP to Email
+            </button>
+            <div class="footer-link">Already have an account? <a href="admin-login.html">← Login</a></div>
+        </div>
+
+        <!-- STEP 2: OTP Verification -->
+        <div class="step" id="step-2">
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:16px">
+                STEP 2 OF 2 — VERIFY YOUR EMAIL
+            </div>
+            <div class="email-display">
+                📧 OTP sent to <strong id="show-email"></strong>
+            </div>
+            <p style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:4px">
+                Enter the 6-digit OTP from your email
+            </p>
+            <div class="otp-row">
+                <input class="otp-box" maxlength="1" id="otp-1" oninput="moveNext(this,2)" onkeydown="movePrev(event,0)">
+                <input class="otp-box" maxlength="1" id="otp-2" oninput="moveNext(this,3)" onkeydown="movePrev(event,1)">
+                <input class="otp-box" maxlength="1" id="otp-3" oninput="moveNext(this,4)" onkeydown="movePrev(event,2)">
+                <input class="otp-box" maxlength="1" id="otp-4" oninput="moveNext(this,5)" onkeydown="movePrev(event,3)">
+                <input class="otp-box" maxlength="1" id="otp-5" oninput="moveNext(this,6)" onkeydown="movePrev(event,4)">
+                <input class="otp-box" maxlength="1" id="otp-6" oninput="moveNext(this,0)"  onkeydown="movePrev(event,5)">
+            </div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:4px">
+                ⏱️ OTP expires in 10 minutes
+            </div>
+            <button class="submit-btn btn-cyan" id="verify-btn" onclick="verifyOTP()">
+                ✅ Verify & Activate Account
+            </button>
+            <div class="resend-row">
+                Didn't receive? &nbsp;
+                <button class="resend-btn" onclick="resendOTP()">Resend OTP</button>
             </div>
         </div>
 
-        <button class="reg-btn" id="reg-btn" onclick="doRegister()">
-            ✅ Create Admin Account
-        </button>
-
-        <div class="reg-footer">
-            Already have an account?
-            <a href="admin-login.html">← Login here</a>
+        <!-- STEP 3: Success -->
+        <div class="step" id="step-3" style="text-align:center;padding:20px 0">
+            <div style="font-size:64px;margin-bottom:16px">🎉</div>
+            <div style="font-family:var(--font-display);font-size:20px;color:var(--neon-green);letter-spacing:2px;margin-bottom:8px">
+                ACCOUNT VERIFIED!
+            </div>
+            <p style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);margin-bottom:24px">
+                Your admin account is now active.
+            </p>
+            <a href="admin-login.html" class="submit-btn btn-cyan" style="display:block;text-decoration:none;text-align:center">
+                ⚡ Go to Login
+            </a>
         </div>
     </div>
 </div>
 
 <script src="app.js"></script>
 <script>
-// If already logged in, redirect
 if (getAdminSession()) window.location.href = 'index.html';
 
-// Password strength checker
+let registeredEmail = '';
+
+// Password strength
 function checkStrength(pwd) {
-    const bar   = document.getElementById('strength-bar');
-    const label = document.getElementById('strength-label');
+    const bar = document.getElementById('s-bar');
+    const lbl = document.getElementById('s-lbl');
     let score = 0;
     if (pwd.length >= 6)  score++;
     if (pwd.length >= 10) score++;
     if (/[A-Z]/.test(pwd)) score++;
     if (/[0-9]/.test(pwd)) score++;
     if (/[^A-Za-z0-9]/.test(pwd)) score++;
-
     const levels = [
-        { pct:'20%', color:'#ff5555', text:'WEAK'      },
-        { pct:'40%', color:'#ff8c00', text:'FAIR'      },
-        { pct:'60%', color:'#ffd700', text:'MODERATE'  },
-        { pct:'80%', color:'#00f5ff', text:'STRONG'    },
+        { pct:'20%', color:'#ff5555', text:'WEAK' },
+        { pct:'40%', color:'#ff8c00', text:'FAIR' },
+        { pct:'60%', color:'#ffd700', text:'MODERATE' },
+        { pct:'80%', color:'#00f5ff', text:'STRONG' },
         { pct:'100%', color:'#00ff88', text:'VERY STRONG' },
     ];
-    const lvl = levels[Math.max(0, score - 1)] || levels[0];
+    const lvl = levels[Math.max(0, score-1)] || levels[0];
     bar.style.width      = pwd.length ? lvl.pct : '0%';
-    bar.style.background = pwd.length ? lvl.color : 'transparent';
-    label.textContent    = pwd.length ? lvl.text : '—';
-    label.style.color    = pwd.length ? lvl.color : 'var(--text-muted)';
+    bar.style.background = pwd.length ? lvl.color : '';
+    lbl.textContent      = pwd.length ? lvl.text : '—';
+    lbl.style.color      = pwd.length ? lvl.color : 'var(--text-muted)';
 }
 
-function validateUsername(inp) {
-    const ok = /^[a-zA-Z0-9_]{3,}$/.test(inp.value);
-    inp.className = inp.value ? (ok ? 'ok' : 'error') : '';
+function showAlert(msg, type='error') {
+    const el = document.getElementById('alert-box');
+    el.textContent = msg;
+    el.className = `alert ${type} show`;
+    if (type !== 'error') setTimeout(() => el.classList.remove('show'), 5000);
 }
 
-function validateConfirm(inp) {
-    const pwd = document.getElementById('reg-password').value;
-    inp.className = inp.value ? (inp.value === pwd ? 'ok' : 'error') : '';
+function setStep(n) {
+    document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i+1 === n));
+    for (let i=1; i<=3; i++) {
+        const d = document.getElementById(`dot-${i}`);
+        d.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+    }
+    document.getElementById('alert-box').classList.remove('show');
 }
 
+// Step 1 — Register
 async function doRegister() {
     const name     = document.getElementById('reg-name').value.trim();
     const username = document.getElementById('reg-username').value.trim();
     const email    = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
     const confirm  = document.getElementById('reg-confirm').value;
-    const alertEl  = document.getElementById('reg-alert');
-    const btn      = document.getElementById('reg-btn');
 
-    alertEl.classList.remove('show','error','success');
+    if (!name || !username || !email || !password || !confirm)
+        return showAlert('⚠ All fields are required.');
+    if (password.length < 6)
+        return showAlert('⚠ Password must be at least 6 characters.');
+    if (password !== confirm)
+        return showAlert('⚠ Passwords do not match.');
 
-    // Validate
-    if (!name || !username || !email || !password || !confirm) {
-        alertEl.textContent = '⚠ All fields are required.';
-        alertEl.className = 'reg-alert error show'; return;
-    }
-    if (!/^[a-zA-Z0-9_]{3,}$/.test(username)) {
-        alertEl.textContent = '⚠ Username must be 3+ characters, letters/numbers/underscore only.';
-        alertEl.className = 'reg-alert error show'; return;
-    }
-    if (password.length < 6) {
-        alertEl.textContent = '⚠ Password must be at least 6 characters.';
-        alertEl.className = 'reg-alert error show'; return;
-    }
-    if (password !== confirm) {
-        alertEl.textContent = '⚠ Passwords do not match.';
-        alertEl.className = 'reg-alert error show'; return;
-    }
-
-    btn.classList.add('loading');
-    btn.textContent = 'Creating account…';
+    const btn = document.getElementById('reg-btn');
+    btn.classList.add('btn-disabled');
+    btn.textContent = 'Sending OTP…';
 
     try {
-        const res = await fetch('http://localhost:3000/admin/register', {
+        const res  = await fetch('http://localhost:3000/admin/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -318,25 +282,80 @@ async function doRegister() {
         const data = await res.json();
 
         if (!res.ok) {
-            alertEl.textContent = '❌ ' + data.error;
-            alertEl.className = 'reg-alert error show';
-            btn.classList.remove('loading');
-            btn.textContent = '✅ Create Admin Account';
+            showAlert('❌ ' + data.error);
+            btn.classList.remove('btn-disabled');
+            btn.textContent = '📧 Send OTP to Email';
             return;
         }
 
-        alertEl.textContent = `✅ Account created! Admin ID: #${data.admin_id}. Redirecting to login…`;
-        alertEl.className = 'reg-alert success show';
-        btn.textContent = '✅ Done!';
-
-        setTimeout(() => { window.location.href = 'admin-login.html'; }, 2000);
+        registeredEmail = email;
+        document.getElementById('show-email').textContent = email;
+        showAlert(`✅ OTP sent to ${email}! Check your inbox.`, 'success');
+        setStep(2);
+        document.getElementById('otp-1').focus();
 
     } catch(e) {
-        alertEl.textContent = '⚠ Cannot connect to server. Start Node.js backend first.';
-        alertEl.className = 'reg-alert error show';
-        btn.classList.remove('loading');
-        btn.textContent = '✅ Create Admin Account';
+        showAlert('⚠ Cannot connect to server. Start Node.js backend.');
+        btn.classList.remove('btn-disabled');
+        btn.textContent = '📧 Send OTP to Email';
     }
+}
+
+// Step 2 — Verify OTP
+async function verifyOTP() {
+    const otp = [1,2,3,4,5,6].map(i => document.getElementById(`otp-${i}`).value).join('');
+    if (otp.length < 6) return showAlert('⚠ Enter all 6 digits.');
+
+    const btn = document.getElementById('verify-btn');
+    btn.classList.add('btn-disabled');
+    btn.textContent = 'Verifying…';
+
+    try {
+        const res  = await fetch('http://localhost:3000/admin/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email: registeredEmail, otp })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showAlert('❌ ' + data.error);
+            btn.classList.remove('btn-disabled');
+            btn.textContent = '✅ Verify & Activate Account';
+            return;
+        }
+
+        setStep(3);
+    } catch(e) {
+        showAlert('⚠ Server error.');
+        btn.classList.remove('btn-disabled');
+        btn.textContent = '✅ Verify & Activate Account';
+    }
+}
+
+// Resend OTP
+async function resendOTP() {
+    try {
+        const res = await fetch('http://localhost:3000/admin/resend-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: registeredEmail })
+        });
+        const data = await res.json();
+        showAlert(res.ok ? '✅ New OTP sent! Check your email.' : '❌ ' + data.error, res.ok ? 'success' : 'error');
+    } catch(e) {
+        showAlert('⚠ Server error.');
+    }
+}
+
+// OTP box navigation
+function moveNext(el, nextIdx) {
+    if (el.value && nextIdx > 0) document.getElementById(`otp-${nextIdx}`).focus();
+}
+function movePrev(e, prevIdx) {
+    if (e.key === 'Backspace' && !e.target.value && prevIdx > 0)
+        document.getElementById(`otp-${prevIdx}`).focus();
 }
 </script>
 </body>
