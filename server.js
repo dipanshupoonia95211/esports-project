@@ -40,7 +40,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'dipanshupoonia95211@gmail.com',
-        pass: 'dbae nfas xsie ovbr'   // App password (spaces removed)
+        pass: 'ziabolguyyllgacfr'   // App password (spaces removed)
     }
 });
 
@@ -427,6 +427,71 @@ app.get('/api/stats', async (req, res) => {
         res.json({ total_players, total_teams, total_tournaments, total_matches, prize_pool, total_admins });
     } catch (err) { sendError(res, err); }
 });
+
+
+// ── RAZORPAY PAYMENT ────────────────────────────────────────
+const Razorpay = require('razorpay');
+const crypto   = require('crypto');
+
+const razorpay = new Razorpay({
+    key_id:     'rzp_test_SRmL5nItHHoEOl',
+    key_secret: 'aNhZRkgwAn0Ej1hf4l3BYRVw'
+});
+
+// Create Razorpay order
+app.post('/api/payment/create-order', requireAdmin, async (req, res) => {
+    const { amount, team_name } = req.body;
+    if (!amount || !team_name) return res.status(400).json({ error: 'amount and team_name required' });
+    try {
+        const options = {
+            amount:   amount * 100,   // paise
+            currency: 'INR',
+            receipt:  `team_${Date.now()}`,
+            notes:    { team_name }
+        };
+        const order = await razorpay.orders.create(options);
+
+        // Save pending payment
+        await db.query(
+            `INSERT INTO Payment (razorpay_order_id, team_name, amount, status, paid_by)
+             VALUES (?, ?, ?, 'Pending', ?)`,
+            [order.id, team_name, amount, req.session.adminName || 'Admin']
+        );
+
+        res.json({ order_id: order.id, amount: order.amount, currency: order.currency, key_id: 'rzp_test_SRmL5nItHHoEOl' });
+    } catch (err) { sendError(res, err); }
+});
+
+// Verify payment signature
+app.post('/api/payment/verify', requireAdmin, async (req, res) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    try {
+        const body      = razorpay_order_id + '|' + razorpay_payment_id;
+        const expected  = crypto.createHmac('sha256', 'aNhZRkgwAn0Ej1hf4l3BYRVw')
+                                .update(body).digest('hex');
+        const isValid   = expected === razorpay_signature;
+
+        await db.query(
+            `UPDATE Payment SET status = ?, razorpay_payment_id = ? WHERE razorpay_order_id = ?`,
+            [isValid ? 'Success' : 'Failed', razorpay_payment_id, razorpay_order_id]
+        );
+
+        if (isValid) {
+            res.json({ verified: true, message: 'Payment successful!' });
+        } else {
+            res.status(400).json({ verified: false, message: 'Payment verification failed.' });
+        }
+    } catch (err) { sendError(res, err); }
+});
+
+// Get all payments
+app.get('/api/payments', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM Payment ORDER BY created_at DESC');
+        res.json(rows);
+    } catch (err) { sendError(res, err); }
+});
+
 
 // ── START ────────────────────────────────────────────────────
 app.listen(PORT, () => {
